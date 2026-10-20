@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grade Average Calculator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            tealBrand: '#14b8a6',
+            tealDark: '#0d9488',
+            darkBlue: '#1a2e3b'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen py-8 px-4 sm:px-6 lg:px-8 antialiased">
+
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Header Banner -->
+    <header class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="inline-block px-3 py-1 bg-teal-600 text-white text-xs font-bold rounded-lg mb-2 shadow-sm">
+          Task #23 Challenge
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Grade Average Calculator</h1>
+      </div>
+
+      <!-- Quick Metrics Summary -->
+      <div class="flex items-center gap-4 w-full md:w-auto">
+        <!-- Average Card -->
+        <div class="flex-1 md:w-36 bg-white p-3 rounded-2xl shadow-sm border border-slate-200 text-center">
+          <div id="statAvg" class="text-3xl font-extrabold text-teal-600">0.0%</div>
+          <div id="statAvgSub" class="text-xs text-slate-500 font-semibold mt-0.5">-</div>
+        </div>
+        <!-- Grade Card -->
+        <div class="flex-1 md:w-36 bg-white p-3 rounded-2xl shadow-sm border border-slate-200 text-center">
+          <div class="text-xs text-slate-400 font-medium uppercase tracking-wider">Overall Grade</div>
+          <div id="statGrade" class="text-3xl font-extrabold text-slate-800 mt-0.5">-</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+      <!-- Left Column: Form & Subject Table (2 Cols on Large Screen) -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Add Subject Form Card -->
+        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <h2 class="text-xl font-bold text-slate-900 mb-0.5">Add New Subject</h2>
+          <p id="formSubtitle" class="text-xs text-slate-400 mb-4 font-medium">Add up to 6 subjects to calculate your weighted mark.</p>
+
+          <form id="addSubjectForm" onsubmit="handleAddSubject(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+              <!-- Subject Name Input -->
+              <div class="sm:col-span-1">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Subject Name</label>
+                <input type="text" id="subjectName" placeholder="e.g. Mathematics" 
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100/80 text-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-200/70 disabled:cursor-not-allowed">
+              </div>
+
+              <!-- Mark Input -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Mark (0 - 100)</label>
+                <input type="number" id="subjectMark" min="0" max="100" step="0.1" placeholder="e.g. 85" 
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100/80 text-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-200/70 disabled:cursor-not-allowed">
+              </div>
+
+              <!-- Credits Input -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Credits</label>
+                <input type="number" id="subjectCredits" min="0.5" step="0.5" placeholder="e.g. 3" 
+                       class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100/80 text-sm transition focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-200/70 disabled:cursor-not-allowed">
+              </div>
+
+            </div>
+
+            <!-- Validation / Limit Warning -->
+            <div id="errorMessage" class="hidden p-3 rounded-xl text-xs font-medium bg-red-50 text-red-700 border border-red-200 flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation text-red-500 text-sm"></i>
+              <span id="errorText">Invalid input details.</span>
+            </div>
+
+            <!-- Form Action & Limit Notice Row -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <span id="limitWarning" class="text-xs text-amber-700 font-semibold hidden flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-info"></i> Maximum limit of 6 subjects reached.
+              </span>
+              <button type="submit" id="submitBtn" 
+                      class="w-full sm:w-auto ml-auto px-5 py-2.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold text-sm rounded-xl shadow-sm transition">
+                Add Subject
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Subject List Card -->
+        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div class="flex items-center gap-3 mb-6">
+            <h2 class="text-xl font-bold text-slate-900">Subject List</h2>
+            <span id="subjectCount" class="text-xs bg-slate-100 text-slate-700 border border-slate-200 font-bold px-3 py-1 rounded-md">
+              0 / 6 Subjects
+            </span>
+          </div>
+
+          <!-- Table Wrapper -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <th class="py-3 px-3">Subject</th>
+                  <th class="py-3 px-3">Mark</th>
+                  <th class="py-3 px-3">Credits</th>
+                  <th class="py-3 px-3">Grade</th>
+                  <th class="py-3 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="subjectTableBody" class="divide-y divide-slate-100 text-sm text-slate-700 font-medium">
+                <!-- Dynamic rows generated via JS -->
+              </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden py-10 text-center text-slate-400 space-y-2">
+              <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
+              <p class="text-sm">No subjects added yet. Add a subject above!</p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: Scale & Stretch Goal -->
+      <div class="space-y-6">
+
+        <!-- Active Grading Scale Reference Card -->
+        <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div class="flex items-center gap-2 mb-2">
+            <i class="fa-solid fa-graduation-cap text-teal-600 text-lg"></i>
+            <h2 class="text-lg font-bold text-slate-900">Grading Scale Reference</h2>
+          </div>
+          <p class="text-xs text-slate-500 mb-4">Letter grades are assigned based on percentage mark ranges:</p>
+          
+          <div class="grid grid-cols-1 gap-2 text-xs font-medium">
+            <div class="flex justify-between items-center bg-teal-50/60 p-2.5 rounded-xl border border-teal-100">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-teal-600 text-white font-bold">A</span>
+              <span class="font-bold text-teal-900">Grade A</span>
+              <span class="text-slate-600 font-semibold">80% – 100%</span>
+            </div>
+            <div class="flex justify-between items-center bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-emerald-500 text-white font-bold">B</span>
+              <span class="font-bold text-emerald-900">Grade B</span>
+              <span class="text-slate-600 font-semibold">70% – 79%</span>
+            </div>
+            <div class="flex justify-between items-center bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-blue-500 text-white font-bold">C</span>
+              <span class="font-bold text-blue-900">Grade C</span>
+              <span class="text-slate-600 font-semibold">60% – 69%</span>
+            </div>
+            <div class="flex justify-between items-center bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-amber-500 text-white font-bold">D</span>
+              <span class="font-bold text-amber-900">Grade D</span>
+              <span class="text-slate-600 font-semibold">50% – 59%</span>
+            </div>
+            <div class="flex justify-between items-center bg-orange-50/60 p-2.5 rounded-xl border border-orange-100">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-orange-500 text-white font-bold">E</span>
+              <span class="font-bold text-orange-900">Grade E</span>
+              <span class="text-slate-600 font-semibold">40% – 49%</span>
+            </div>
+            <div class="flex justify-between items-center bg-red-50/60 p-2.5 rounded-xl border border-red-100">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-red-500 text-white font-bold">F</span>
+              <span class="font-bold text-red-900">Grade F</span>
+              <span class="text-slate-600 font-semibold">0% – 39%</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- STRETCH Goal Card -->
+        <section class="bg-[#1e323d] text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-teal-500/20 text-teal-300 text-[10px] font-bold tracking-wide uppercase rounded-md mb-2 border border-teal-500/30">
+            <i class="fa-solid fa-bullseye"></i> Stretch Goal
+          </div>
+          <h2 class="text-lg font-bold mb-1 tracking-wide">Target Grade "A" Exam</h2>
+          <p class="text-xs text-slate-300 mb-4 leading-relaxed">Calculate the required mark on your final exam to achieve an overall 80%+ average.</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-200 mb-2">Upcoming Exam Credits</label>
+              <input type="number" id="stretchExamCredits" min="0.5" step="0.5" value="3" oninput="calculateRequiredMark()"
+                     class="w-full px-3.5 py-2.5 rounded-xl bg-white text-slate-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500">
+            </div>
+
+            <!-- Calculated Alert Box -->
+            <div id="stretchResult" class="p-3.5 rounded-xl text-xs font-normal leading-relaxed bg-[#162730] border border-slate-700/60 text-slate-200">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const MAX_SUBJECTS = 6;
+
+    // Default preset subjects
+    let subjects = [
+      { id: 1, name: "Mathematics", mark: 84, credits: 4 },
+      { id: 2, name: "Computer Science", mark: 76, credits: 3 },
+      { id: 3, name: "Physics", mark: 68, credits: 3 }
+    ];
+
+    // Determine Letter Grade from Percentage Mark
+    function getLetterGrade(mark) {
+      if (mark >= 80) return { letter: 'A', bg: 'bg-teal-600 text-white', label: 'Grade A' };
+      if (mark >= 70) return { letter: 'B', bg: 'bg-emerald-500 text-white', label: 'Grade B' };
+      if (mark >= 60) return { letter: 'C', bg: 'bg-blue-500 text-white', label: 'Grade C' };
+      if (mark >= 50) return { letter: 'D', bg: 'bg-amber-500 text-white', label: 'Grade D' };
+      if (mark >= 40) return { letter: 'E', bg: 'bg-orange-500 text-white', label: 'Grade E' };
+      return { letter: 'F', bg: 'bg-red-500 text-white', label: 'Grade F' };
+    }
+
+    // Render Subjects Table and Page Metrics
+    function render() {
+      const tbody = document.getElementById('subjectTableBody');
+      const emptyState = document.getElementById('emptyState');
+      const countBadge = document.getElementById('subjectCount');
+
+      tbody.innerHTML = '';
+      countBadge.textContent = `${subjects.length} / ${MAX_SUBJECTS} Subjects`;
+
+      checkSubjectLimit();
+
+      if (subjects.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+
+        subjects.forEach(subject => {
+          const gradeInfo = getLetterGrade(subject.mark);
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50 transition-colors';
+          tr.innerHTML = `
+            <td class="py-3 px-3 font-semibold text-slate-800">${escapeHtml(subject.name)}</td>
+            <td class="py-3 px-3 font-semibold text-slate-700">${subject.mark.toFixed(1)}%</td>
+            <td class="py-3 px-3 text-slate-600">${subject.credits}</td>
+            <td class="py-3 px-3">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg ${gradeInfo.bg}">
+                ${gradeInfo.label}
+              </span>
+            </td>
+            <td class="py-3 px-3 text-right">
+              <button onclick="removeSubject(${subject.id})" 
+                      class="text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition"
+                      title="Delete Subject">
+                <i class="fa-regular fa-trash-can text-sm"></i>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      updateMetrics();
+      calculateRequiredMark();
+    }
+
+    // Enforce MAX_SUBJECTS (6 Limit)
+    function checkSubjectLimit() {
+      const nameInput = document.getElementById('subjectName');
+      const markInput = document.getElementById('subjectMark');
+      const creditsInput = document.getElementById('subjectCredits');
+      const submitBtn = document.getElementById('submitBtn');
+      const formSubtitle = document.getElementById('formSubtitle');
+      const limitWarning = document.getElementById('limitWarning');
+      const countBadge = document.getElementById('subjectCount');
+
+      if (subjects.length >= MAX_SUBJECTS) {
+        nameInput.disabled = true;
+        markInput.disabled = true;
+        creditsInput.disabled = true;
+        submitBtn.disabled = true;
+        
+        submitBtn.className = "w-full sm:w-auto px-5 py-2.5 bg-slate-300 text-slate-500 font-semibold text-sm rounded-xl cursor-not-allowed";
+        formSubtitle.textContent = "Maximum limit of 6 subjects reached.";
+        limitWarning.classList.remove('hidden');
+        countBadge.className = "text-xs bg-amber-600 text-white font-bold px-3 py-1 rounded-md";
+      } else {
+        nameInput.disabled = false;
+        markInput.disabled = false;
+        creditsInput.disabled = false;
+        submitBtn.disabled = false;
+        
+        submitBtn.className = "w-full sm:w-auto px-5 py-2.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold text-sm rounded-xl shadow-sm transition";
+        formSubtitle.textContent = "Add up to 6 subjects to calculate your weighted mark.";
+        limitWarning.classList.add('hidden');
+        countBadge.className = "text-xs bg-slate-100 text-slate-700 border border-slate-200 font-bold px-3 py-1 rounded-md";
+      }
+    }
+
+    // Calculate Overall Weighted Average
+    function updateMetrics() {
+      const avgElem = document.getElementById('statAvg');
+      const avgSubElem = document.getElementById('statAvgSub');
+      const gradeElem = document.getElementById('statGrade');
+
+      if (subjects.length === 0) {
+        avgElem.textContent = '0.0%';
+        avgSubElem.textContent = '-';
+        gradeElem.textContent = '-';
+        return;
+      }
+
+      let totalWeightedMarks = 0;
+      let totalCredits = 0;
+
+      subjects.forEach(s => {
+        totalWeightedMarks += s.mark * s.credits;
+        totalCredits += s.credits;
+      });
+
+      const average = totalCredits > 0 ? (totalWeightedMarks / totalCredits) : 0;
+      const overallGrade = getLetterGrade(average);
+
+      avgElem.textContent = `${average.toFixed(1)}%`;
+      avgSubElem.textContent = `${overallGrade.label}`;
+      gradeElem.textContent = overallGrade.letter;
+    }
+
+    // Add Subject Handler with Input Validation
+    function handleAddSubject(event) {
+      event.preventDefault();
+
+      const errorBanner = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+
+      if (subjects.length >= MAX_SUBJECTS) {
+        showError(`Maximum limit of ${MAX_SUBJECTS} subjects reached.`);
+        return;
+      }
+
+      const nameInput = document.getElementById('subjectName');
+      const markInput = document.getElementById('subjectMark');
+      const creditsInput = document.getElementById('subjectCredits');
+
+      const name = nameInput.value.trim();
+      const mark = parseFloat(markInput.value);
+      const credits = parseFloat(creditsInput.value);
+
+      if (isNaN(mark) || mark < 0 || mark > 100) {
+        showError("Please enter a valid mark between 0 and 100.");
+        return;
+      }
+
+      if (isNaN(credits) || credits <= 0) {
+        showError("Please enter a valid credit value greater than 0.");
+        return;
+      }
+
+      errorBanner.classList.add('hidden');
+
+      subjects.push({
+        id: Date.now(),
+        name: name || `Subject ${subjects.length + 1}`,
+        mark: mark,
+        credits: credits
+      });
+
+      nameInput.value = '';
+      markInput.value = '';
+      creditsInput.value = '';
+
+      render();
+    }
+
+    // Delete Subject
+    function removeSubject(id) {
+      subjects = subjects.filter(s => s.id !== id);
+      render();
+    }
+
+    // Stretch Goal Target Exam Calculation
+    function calculateRequiredMark() {
+      const creditsInput = document.getElementById('stretchExamCredits');
+      const resultDiv = document.getElementById('stretchResult');
+      const examCredits = parseFloat(creditsInput.value);
+
+      if (isNaN(examCredits) || examCredits <= 0) {
+        resultDiv.innerHTML = `
+          <div class="flex items-center gap-2 text-red-300">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Please enter valid credits for your upcoming exam.</span>
+          </div>`;
+        return;
+      }
+
+      let currentWeightedSum = 0;
+      let currentCredits = 0;
+
+      subjects.forEach(s => {
+        currentWeightedSum += s.mark * s.credits;
+        currentCredits += s.credits;
+      });
+
+      if (currentCredits === 0) {
+        resultDiv.innerHTML = `
+          <div class="flex items-center gap-2 text-slate-300">
+            <i class="fa-solid fa-circle-info text-teal-400"></i>
+            <span>Add at least one subject to compute your target score.</span>
+          </div>`;
+        return;
+      }
+
+      const targetAverage = 80; // Grade A Target
+      const totalCreditsWithExam = currentCredits + examCredits;
+      const requiredMark = ((targetAverage * totalCreditsWithExam) - currentWeightedSum) / examCredits;
+
+      if (requiredMark > 100) {
+        resultDiv.innerHTML = `
+          <div class="flex items-start gap-2.5">
+            <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base mt-0.5 shrink-0"></i>
+            <div>
+              You need <strong class="text-white text-sm font-extrabold">${requiredMark.toFixed(1)}%</strong> on your final exam. This target exceeds 100%.
+            </div>
+          </div>`;
+      } else if (requiredMark <= 0) {
+        resultDiv.innerHTML = `
+          <div class="flex items-start gap-2.5">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5 shrink-0"></i>
+            <div>
+              Great job! You already have a strong average. You only need <strong>0%</strong> on this exam to achieve <strong>Grade A</strong>.
+            </div>
+          </div>`;
+      } else {
+        resultDiv.innerHTML = `
+          <div class="flex items-start gap-2.5">
+            <i class="fa-solid fa-bullseye text-teal-400 text-base mt-0.5 shrink-0"></i>
+            <div>
+              You need at least <strong class="text-white text-sm font-extrabold">${requiredMark.toFixed(1)}%</strong> on your last exam to achieve an overall <strong>Grade A</strong>.
+            </div>
+          </div>`;
+      }
+    }
+
+    function showError(msg) {
+      const errorBanner = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+      errorText.textContent = msg;
+      errorBanner.classList.remove('hidden');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+      });
+    }
+
+    window.onload = function() {
+      render();
+    };
+  </script>
+</body>
+</html>
